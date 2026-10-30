@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: netguard
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/status
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false            # set it in the Render dashboard; never committed
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      # Free tier: 512 MB RAM and a fraction of a CPU.
+      - key: NETGUARD_MAX_TRANS_CELLS
+        value: "20000000"      # ~300 MB peak; larger automata get a clear diagnostic instead of an OOM kill
+      - key: NETGUARD_TIMEOUT
+        value: "120"           # seconds per netguard run (slow CPU)

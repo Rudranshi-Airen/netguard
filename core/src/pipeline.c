@@ -62,7 +62,11 @@ int pipeline_run(Pipeline *pl, const char *src, Syntax syn, MinMode mode, RunLev
             t = clock_now();
             rc = dfa_build(&pl->c.dfa, &pl->c.nfa, &pl->pol, &pl->pt);
             pl->ms[PH_DFA] = ms_since(t);
-            if (rc != 0)
+            if (rc == -2)
+                snprintf(msg, sizeof msg,
+                         "the DFA transition table would need more than %ld cells (states x alphabet symbols), "
+                         "the memory cap of this server (NETGUARD_MAX_TRANS_CELLS)", dfa_max_trans_cells());
+            else if (rc != 0)
                 snprintf(msg, sizeof msg, "the subset construction exceeded %d DFA states", NG_MAX_DFA_STATES);
         }
         if (rc != 0) {

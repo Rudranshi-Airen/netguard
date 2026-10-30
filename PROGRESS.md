@@ -14,6 +14,7 @@
 | UI: ClassBench provenance note, grouped example picker (P3) | Done | `web/static/app.js` |
 | **P2** UCI import and replay | Done (real data) | `log2.csv` (65,532 records) downloaded from UCI; `examples/uci_induced.ng` (115 rules, optimizer 86); `outputs/uci_replay.md`: 95.65 % agreement with the logged actions, oracle 65,532/65,532 |
 | P3 screenshots | Not done | |
+| Render deployment | Done | `Dockerfile` (compiles `bin/netguard` for Linux in the image), `.dockerignore`, `render.yaml` (free plan, `GEMINI_API_KEY` with `sync: false`), `web/requirements.txt`; memory cap `NETGUARD_MAX_TRANS_CELLS` and timeout `NETGUARD_TIMEOUT` are now configurable |
 
 ### Test status (last run)
 

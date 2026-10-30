@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 STATIC = os.path.join(HERE, "static")
 EXAMPLES = os.path.join(ROOT, "examples")
-TIMEOUT_S = 30
+TIMEOUT_S = int(os.environ.get("NETGUARD_TIMEOUT", "30"))   # seconds per netguard run
 MAX_SOURCE = 2 * 1024 * 1024
 
 # Static files are served from the site root, so index.html links them with

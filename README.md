@@ -54,6 +54,28 @@ Then open http://127.0.0.1:5000.
 
 The server finds `bin/netguard` or `bin/netguard.exe` automatically. If the binary has not been built, every API call returns a clear error asking you to run `make`.
 
+## Deploy on Render
+
+The repo includes a `Dockerfile` and a `render.yaml`. The image compiles `bin/netguard` for Linux inside the container and serves the app with gunicorn on port 10000.
+
+1. In Render: **New → Web Service**, then pick this GitHub repository. Render reads `render.yaml`; the runtime is Docker.
+2. Choose the **Free** instance type.
+3. Under **Environment**, add `GEMINI_API_KEY` with your key. It is marked `sync: false` in `render.yaml`, so it is never committed. Without it the app still works, and AI merge replays the recorded replies.
+4. Click **Deploy**. When the build finishes, open the service URL. The health check is `/api/status`.
+
+Notes for the free tier:
+
+- **Sleeping:** the service sleeps after about 15 minutes idle, so the first request after that takes about a minute.
+- **Memory cap:** the instance has 512 MB of RAM, so `render.yaml` sets `NETGUARD_MAX_TRANS_CELLS=20000000`. Automata larger than that get a clear diagnostic instead of being killed for running out of memory. Of the examples, only `classbench_fw1_631.ng` hits the cap (it needs about 1 GB); `classbench_acl1_2048.ng` peaks at about 300 MB and works.
+- **Timeout:** `NETGUARD_TIMEOUT=120` gives each compiler run more time on the slow free CPU.
+
+To run the same image locally:
+
+```bash
+docker build -t netguard .
+docker run -p 10000:10000 -e GEMINI_API_KEY=... netguard   # then open http://127.0.0.1:10000
+```
+
 ## Tests
 
 ```bash

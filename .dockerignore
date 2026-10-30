@@ -1,0 +1,19 @@
+# Local environments and build output (the image compiles its own Linux binary)
+.venv/
+.pytest_cache/
+**/__pycache__/
+bin/
+core/build/
+.git/
+.claude/
+.DS_Store
+# Large raw datasets (only the generated examples/ are needed)
+datasets/classbench/PartitonSort/
+datasets/classbench/rules/
+datasets/uci/log2.csv
+datasets/uci/*.zip
+datasets/uci/packets.txt
+# Not needed at runtime
+outputs/
+tests_py/
+previous_draft_backup/

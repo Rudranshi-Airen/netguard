@@ -41,7 +41,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_TRANS_CELLS 60000000L   /* cap on nstates * nsyms (240 MB of ints) */
+/* Cap on nstates * nsyms.  Each cell costs about 16 bytes at peak (the table
+ * plus Hopcroft's inverse lists), so the default 60M cells is ~1 GB.  Small
+ * servers lower it with the environment variable NETGUARD_MAX_TRANS_CELLS. */
+#define DEFAULT_MAX_TRANS_CELLS 60000000L
+
+long dfa_max_trans_cells(void) {
+    const char *e = getenv("NETGUARD_MAX_TRANS_CELLS");
+    long v = e ? strtol(e, NULL, 10) : 0;
+    return v > 0 ? v : DEFAULT_MAX_TRANS_CELLS;
+}
 
 typedef struct {
     DFA *d;
@@ -50,6 +59,8 @@ typedef struct {
     uint64_t *sets;        /* sets[s * words ...] */
     int *table;            /* open-addressing hash: DFA state ids, -1 = empty */
     size_t tcap;
+    long max_cells;
+    int hit_cell_cap;
 } Builder;
 
 static void grow(Builder *b) {
@@ -96,8 +107,11 @@ static int intern(Builder *b, int layer, const uint64_t *set, int parent, int ps
             return s;
         h = (h + 1) & (b->tcap - 1);
     }
-    if (d->nstates >= NG_MAX_DFA_STATES ||
-        (long)(d->nstates + 1) * (long)d->nsyms > MAX_TRANS_CELLS) return -1;
+    if (d->nstates >= NG_MAX_DFA_STATES) return -1;
+    if ((long)(d->nstates + 1) * (long)d->nsyms > b->max_cells) {
+        b->hit_cell_cap = 1;
+        return -1;
+    }
     if (d->nstates == d->cap) grow(b);
     int s = d->nstates++;
     memcpy(b->sets + (size_t)s * b->words, set, b->words * sizeof(uint64_t));
@@ -137,7 +151,7 @@ int dfa_build(DFA *d, const NFA *n, const Policy *p, const Partition *pt) {
     d->nsyms = pt->total_syms;
     d->nfields = p->nfields;
     d->sink = -1;
-    Builder b = {d, n, BS_WORDS(n->nstates), NULL, NULL, 0};
+    Builder b = {d, n, BS_WORDS(n->nstates), NULL, NULL, 0, dfa_max_trans_cells(), 0};
     if (b.words == 0) b.words = 1;
     rehash(&b);
 
@@ -194,7 +208,7 @@ int dfa_build(DFA *d, const NFA *n, const Policy *p, const Partition *pt) {
             uint64_t *u = buckets + (size_t)j * b.words;
             eps_closure(n, u, b.words, stack);
             int t = intern(&b, L + 1, u, cur, off + j);
-            if (t < 0) { rc = -1; goto done; }
+            if (t < 0) { rc = b.hit_cell_cap ? -2 : -1; goto done; }
             row = d->trans + (size_t)cur * d->nsyms;
             row[off + j] = t;
         }

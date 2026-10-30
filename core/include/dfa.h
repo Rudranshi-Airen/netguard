@@ -29,10 +29,12 @@ typedef struct {
     int      cap;
 } DFA;
 
-/* Subset construction.  Returns 0, or -1 if NG_MAX_DFA_STATES (or the
- * transition-table size limit) would be exceeded. */
+/* Subset construction.  Returns 0, -1 if NG_MAX_DFA_STATES would be
+ * exceeded, -2 if the transition table would exceed dfa_max_trans_cells(). */
 int  dfa_build(DFA *d, const NFA *n, const Policy *p, const Partition *pt);
 void dfa_free(DFA *d);
+/* Memory cap on states * symbols (env NETGUARD_MAX_TRANS_CELLS, default 60M). */
+long dfa_max_trans_cells(void);
 int  dfa_final_count(const DFA *d);
 /* Run the DFA on the symbols of a packet; returns the state reached.
  * states_out (optional) receives the nfields+1 visited states. */

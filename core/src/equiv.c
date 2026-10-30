@@ -42,8 +42,12 @@ int compile_policy(Compiled *c, const Policy *p, const Partition *pt, int want_m
         snprintf(msg, (size_t)msgcap, "the Thompson NFA would need %d states (limit %d)", needed, NG_MAX_NFA_STATES);
         return -1;
     }
-    if (dfa_build(&c->dfa, &c->nfa, p, pt) != 0) {
-        snprintf(msg, (size_t)msgcap, "the subset construction exceeded %d DFA states", NG_MAX_DFA_STATES);
+    int drc = dfa_build(&c->dfa, &c->nfa, p, pt);
+    if (drc != 0) {
+        if (drc == -2)
+            snprintf(msg, (size_t)msgcap, "the DFA transition table would exceed %ld cells (memory cap)", dfa_max_trans_cells());
+        else
+            snprintf(msg, (size_t)msgcap, "the subset construction exceeded %d DFA states", NG_MAX_DFA_STATES);
         return -1;
     }
     if (want_min) {
