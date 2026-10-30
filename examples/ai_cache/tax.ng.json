@@ -1,0 +1,8 @@
+{
+  "example": "tax.ng",
+  "provenance": "REAL Gemini reply: model gemini-3.5-flash, recorded 2026-10-26 by tools/make_ai_cache.py",
+  "note": "attempt 1: equivalent",
+  "attempts": [
+    "ruleset tax;\nfield income : 0 .. 100000000;\nfield age : 0 .. 150;\ndefault SLAB_30;\nrule t1 : SLAB_0 when income in 0 .. 300000;\nrule t2 : SLAB_0 when income in 0 .. 500000 and age in 80 .. 150;\nrule t3 : SLAB_5 when income in 300001 .. 700000;\nrule t4 : SLAB_10 when income in 700001 .. 1000000;\n"
+  ]
+}

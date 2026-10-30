@@ -1,0 +1,19 @@
+# ai_trap.fw -- rules that LOOK mergeable but are not, to test the AI-merge proof.
+# Each group invites a merge that would silently change some decisions:
+#  - ALLOW ranges split around an exception that sits BETWEEN them in priority
+#  - same ports, different protocols
+#  - a narrower DENY placed after a broader ALLOW (shadowed for some packets only)
+ALLOW TCP FROM 10.0.0.0/8 TO ANY PORT 80-85
+DENY  TCP FROM 10.1.0.0/16 TO ANY PORT 80-90
+ALLOW TCP FROM 10.0.0.0/8 TO ANY PORT 86-90
+ALLOW TCP FROM ANY TO 172.16.0.0/24 PORT 443
+ALLOW UDP FROM ANY TO 172.16.0.0/24 PORT 443
+DENY  TCP FROM 192.168.7.0/24 TO 172.16.0.0/23 PORT 443
+ALLOW TCP FROM ANY TO 172.16.1.0/24 PORT 443
+ALLOW TCP FROM ANY TO ANY PORT 8000-8009
+DENY  TCP FROM ANY TO ANY PORT 8010
+ALLOW TCP FROM ANY TO ANY PORT 8011-8020
+ALLOW UDP FROM ANY TO ANY PORT 8000-8020
+DENY  ICMP FROM 10.0.0.0/8 TO ANY
+ALLOW ICMP FROM ANY TO ANY
+DEFAULT DENY

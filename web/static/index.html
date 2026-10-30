@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NetGuard</title>
+<link rel="stylesheet" href="styles.css?v=r3c">
+<script src="https://cdn.jsdelivr.net/npm/@viz-js/viz@3.11.0/lib/viz-standalone.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">NG</div>
+      <div>
+        <div class="brand-name">NetGuard</div>
+        <div class="brand-sub">Compiler-assisted firewall analysis</div>
+      </div>
+    </div>
+    <nav id="nav">
+      <a href="#editor" data-sec="editor"><span class="num">1</span>Policy Editor</a>
+      <a href="#lexical" data-sec="lexical"><span class="num">2</span>Lexical Analysis</a>
+      <a href="#syntax" data-sec="syntax"><span class="num">3</span>Syntax / IR</a>
+      <a href="#partitions" data-sec="partitions"><span class="num">4</span>Interval Partitions</a>
+      <a href="#automata" data-sec="automata"><span class="num">5</span>Automata</a>
+      <a href="#analysis" data-sec="analysis"><span class="num">6</span>Analysis Dashboard</a>
+      <a href="#tester" data-sec="tester"><span class="num">7</span>Packet Tester</a>
+      <a href="#optimized" data-sec="optimized"><span class="num">8</span>Original vs Optimized</a>
+      <a href="#validation" data-sec="validation"><span class="num">9</span>Validation</a>
+    </nav>
+    <div class="sidebar-foot">
+      <button id="themeBtn" class="ghost small" type="button">Toggle theme</button>
+      <div class="muted tiny">Educational tool. It never configures a real firewall or touches network traffic.</div>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div id="statusPill" class="pill neutral">Not compiled</div>
+      <div id="pipelineStrip" class="strip"></div>
+      <div id="timing" class="muted tiny"></div>
+    </header>
+
+    <!-- 1. Editor -->
+    <section id="sec-editor" class="section">
+      <h1>Policy Editor</h1>
+      <p class="lead">Write a policy in the firewall language (<code>.fw</code>) or the generic rule language (<code>.ng</code>), then compile it. Every number in this app comes from the C compiler's output.</p>
+      <div class="toolbar">
+        <label>Example <select id="exampleSel"><option value="">Load an example...</option></select></label>
+        <label>Syntax <select id="syntaxSel"><option value="fw">.fw firewall</option><option value="ng">.ng generic</option></select></label>
+        <button id="compileBtn" class="primary" type="button">Compile</button>
+        <span class="muted tiny">Ctrl/Cmd + Enter</span>
+      </div>
+      <div id="datasetNote" class="note" hidden></div>
+      <div class="editor">
+        <pre id="gutter" class="gutter" aria-hidden="true">1</pre>
+        <textarea id="source" spellcheck="false" autocomplete="off" aria-label="Policy source"></textarea>
+      </div>
+      <h2>Diagnostics</h2>
+      <div id="diagnostics" class="diag-list"><div class="empty">Compile to see diagnostics.</div></div>
+    </section>
+
+    <!-- 2. Lexical -->
+    <section id="sec-lexical" class="section">
+      <h1>Lexical Analysis</h1>
+      <p class="lead">Tokens produced by the hand-written DFA scanner (IPv4 and CIDR literals are recognised inside the scanner).</p>
+      <div class="toolbar"><label><input type="checkbox" id="hideNl" checked> Hide NEWLINE tokens</label><span id="tokCount" class="muted"></span></div>
+      <div id="tokens" class="table-wrap"></div>
+    </section>
+
+    <!-- 3. Syntax / IR -->
+    <section id="sec-syntax" class="section">
+      <h1>Syntax / IR</h1>
+      <p class="lead">Rules after recursive-descent parsing and semantic lowering: one inclusive range per packet field (shown as text and as the integer the automata use).</p>
+      <div id="policyMeta" class="chips"></div>
+      <div id="irTable" class="table-wrap"></div>
+    </section>
+
+    <!-- 4. Partitions -->
+    <section id="sec-partitions" class="section">
+      <h1>Interval Partitions</h1>
+      <p class="lead">Each field's domain is cut at every rule boundary into the minimal set of disjoint intervals. Each interval is one alphabet symbol, like a character class in flex. Hover over a segment to see its range and the rules that cover it.</p>
+      <div id="cells" class="chips"></div>
+      <div id="partitions"></div>
+    </section>
+
+    <!-- 5. Automata -->
+    <section id="sec-automata" class="section">
+      <h1>Automata</h1>
+      <p class="lead">Thompson ε-NFA, layered DFA from the subset construction, and the Hopcroft-minimized DFA.</p>
+      <div id="autoStats" class="stat-row"></div>
+      <div class="toolbar">
+        <div class="tabs" id="autoTabs">
+          <button data-tab="nfa" class="tab active" type="button">NFA</button>
+          <button data-tab="dfa" class="tab" type="button">DFA</button>
+          <button data-tab="min" class="tab" type="button">Minimized DFA</button>
+        </div>
+        <div class="seg" id="minMode">
+          <span class="muted tiny">Minimize by</span>
+          <button data-mode="action" class="tab active" type="button">action</button>
+          <button data-mode="rule" class="tab" type="button">rule</button>
+        </div>
+        <div class="seg">
+          <button id="zoomOut" class="ghost small" type="button">−</button>
+          <button id="zoomReset" class="ghost small" type="button">fit</button>
+          <button id="zoomIn" class="ghost small" type="button">+</button>
+        </div>
+      </div>
+      <div id="graphNote" class="muted small"></div>
+      <div id="graph" class="graph"><div class="empty">Compile to see the automata.</div></div>
+    </section>
+
+    <!-- 6. Analysis -->
+    <section id="sec-analysis" class="section">
+      <h1>Analysis Dashboard</h1>
+      <p class="lead">Shadowing and redundancy, computed by a separate analysis pass over the unminimized DFA (each final state records every matching rule and the winner). Redundancy is proved with the equivalence checker.</p>
+      <div id="counts" class="stat-row"></div>
+      <div class="toolbar"><label>Show <select id="statusFilter">
+        <option value="all">all rules</option><option value="ok">ok</option><option value="shadowed">shadowed</option>
+        <option value="partial">partial</option><option value="redundant">redundant</option></select></label></div>
+      <div id="ruleCards" class="cards"></div>
+    </section>
+
+    <!-- 7. Tester -->
+    <section id="sec-tester" class="section">
+      <h1>Packet Tester</h1>
+      <p class="lead">Classifies a packet with the minimized DFA, explains it with the unminimized DFA, and cross-checks it with the linear first-match oracle.</p>
+      <form id="pktForm" class="pkt-form"></form>
+      <div id="pktResult"></div>
+    </section>
+
+    <!-- 8. Optimized -->
+    <section id="sec-optimized" class="section">
+      <h1>Original vs Optimized</h1>
+      <p class="lead">The optimizer only removes rules. Shadowed rules go first, then each remaining rule from last to first is removed only if every packet class (final DFA state) keeps its original decision. The result is then proven equivalent to the original by the product-automaton check.</p>
+      <div id="optSummary" class="chips"></div>
+      <div class="diff">
+        <div class="panel"><h3>Original</h3><div id="origList"></div></div>
+        <div class="panel"><h3>Optimized <button id="downloadBtn" class="ghost small" type="button">Download</button></h3><pre id="optSource" class="code"></pre></div>
+      </div>
+      <h2>Removal log</h2>
+      <ol id="removalLog" class="log"></ol>
+
+      <h2>AI merge (Gemini)</h2>
+      <p class="lead">Gemini only <b>proposes</b> a smaller policy that merges rules. NetGuard <b>proves</b> it equivalent to the original with the product automaton, or rejects it with a counterexample packet that is sent back to the model (up to 3 attempts). A proposal is accepted only if it is proven equivalent <i>and</i> has fewer rules than the optimizer's result.</p>
+      <div class="toolbar">
+        <button id="aiBtn" class="primary" type="button">AI merge (Gemini)</button>
+        <label title="Use the recorded Gemini reply for this example if there is one; NetGuard still re-proves it live"><input type="checkbox" id="aiReplay" checked> Replay recorded reply (instant)</label>
+        <span id="aiModePill"></span>
+      </div>
+      <div id="aiBox"></div>
+    </section>
+
+    <!-- 9. Validation -->
+    <section id="sec-validation" class="section">
+      <h1>Validation</h1>
+      <p class="lead">Equivalence of the optimized policy with the original (BFS over the product of both minimized DFAs on the original partition), plus randomized differential testing against the oracle.</p>
+      <div id="equivBox"></div>
+      <h2>Random verification</h2>
+      <div class="toolbar">
+        <label>Packets <input id="verifyN" type="number" value="10000" min="1" max="200000"></label>
+        <label>Seed <input id="verifySeed" type="number" value="42" min="0"></label>
+        <button id="verifyBtn" class="primary" type="button">Run random verification</button>
+      </div>
+      <div id="verifyBox"></div>
+    </section>
+  </main>
+</div>
+<div id="tooltip" class="tooltip" role="tooltip"></div>
+<script src="app.js?v=r3c"></script>
+</body>
+</html>

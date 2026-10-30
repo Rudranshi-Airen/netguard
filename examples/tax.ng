@@ -1,0 +1,10 @@
+# tax.ng -- the generic rule language: the same compiler, a different domain
+ruleset tax;
+field income : 0 .. 100000000;
+field age    : 0 .. 150;
+default SLAB_30;
+rule t1 : SLAB_0  when income in 0 .. 300000;
+rule t2 : SLAB_0  when income in 0 .. 500000 and age in 80 .. 150;
+rule t3 : SLAB_5  when income in 300001 .. 700000;
+rule t4 : SLAB_10 when income in 700001 .. 1000000;
+rule t5 : SLAB_5  when income in 400000 .. 600000;

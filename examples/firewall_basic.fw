@@ -1,0 +1,6 @@
+# firewall_basic.fw -- the 4-rule policy from the language reference
+DENY  TCP FROM ANY TO ANY PORT 22
+ALLOW TCP FROM 10.0.0.0/8 TO ANY PORT 22
+ALLOW TCP FROM ANY TO ANY PORT 443
+ALLOW UDP FROM ANY TO ANY PORT 53
+DEFAULT DENY

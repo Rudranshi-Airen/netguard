@@ -1,0 +1,10 @@
+bin/
+core/build/
+.venv/
+__pycache__/
+.pytest_cache/
+datasets/classbench/PartitonSort/
+datasets/classbench/rules/
+datasets/uci/*.csv
+datasets/uci/*.zip
+datasets/uci/packets.txt

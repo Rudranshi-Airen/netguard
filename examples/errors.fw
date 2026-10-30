@@ -1,0 +1,14 @@
+# errors.fw -- deliberate lexical, syntax and semantic errors (all are reported)
+ALLOW TCP FROM 300.0.0.1 TO ANY PORT 80          # semantic: octet 300 > 255
+DENY  TCP FROM 10.0.0.0/33 TO ANY PORT 22        # semantic: CIDR prefix /33 > 32
+ALLOW TCP FROM 10.1.2.3/8 TO ANY PORT 443        # warning: host bits set (normalized to 10.0.0.0/8)
+ALLOW UDP FROM ANY TO ANY PORT 100-50            # semantic: port range lo > hi
+ALLOW TCP FROM ANY TO ANY PORT 70000             # semantic: port out of 0..65535
+PERMIT TCP FROM ANY TO ANY PORT 8080             # lexical: unknown word PERMIT
+ALLOW TCP FROM ANY PORT 22                       # syntax: missing TO addr
+DENY  TCP FROM ANY TO @host PORT 25              # lexical: unexpected character '@'
+ALLOW TCP FROM 10.0.0.9-10.0.0.1 TO ANY          # semantic: address range lo > hi
+DENY  ICMP FROM ANY TO ANY PORT 7                # warning: PORT with ICMP is ignored
+ALLOW TCP FROM ANY TO ANY PORT 80 443            # syntax: extra token after the rule
+DEFAULT DENY
+DEFAULT ALLOW                                    # semantic: duplicate DEFAULT

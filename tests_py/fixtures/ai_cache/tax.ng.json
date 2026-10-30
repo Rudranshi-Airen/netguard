@@ -1,0 +1,9 @@
+{
+  "example": "tax.ng",
+  "provenance": "HAND-WRITTEN demo response (no GEMINI_API_KEY was available when this cache was created). It imitates the kind of output a model produces; it is NOT a real Gemini reply. Regenerate with tools/make_ai_cache.py when a key is available.",
+  "note": "Attempt 1 merges t1 and t2 into one SLAB_0 rule for income 0..500000 (drops t2's age condition) and must be rejected; attempt 2 is equivalent but still has 4 rules, so it is not accepted (not fewer than the optimizer's 4).",
+  "attempts": [
+    "ruleset tax;\nfield income : 0 .. 100000000;\nfield age : 0 .. 150;\ndefault SLAB_30;\nrule t1 : SLAB_0 when income in 0 .. 500000;\nrule t3 : SLAB_5 when income in 300001 .. 700000;\nrule t4 : SLAB_10 when income in 700001 .. 1000000;\n",
+    "ruleset tax;\nfield income : 0 .. 100000000;\nfield age : 0 .. 150;\ndefault SLAB_30;\nrule t2 : SLAB_0 when income in 0 .. 500000 and age in 80 .. 150;\nrule t1 : SLAB_0 when income in 0 .. 300000;\nrule t3 : SLAB_5 when income in 300001 .. 700000;\nrule t4 : SLAB_10 when income in 700001 .. 1000000;\n"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "example": "firewall_anomalies.fw",
+  "provenance": "HAND-WRITTEN demo response (no GEMINI_API_KEY was available when this cache was created). It imitates the kind of output a model produces; it is NOT a real Gemini reply. Regenerate with tools/make_ai_cache.py when a key is available.",
+  "note": "Attempt 1 widens R10's 172.16.0.0/24 to /16 (a typical over-merge) and must be rejected with a counterexample; attempt 2 merges R5+R6 (ports 80-89 and 90-100) correctly.",
+  "attempts": [
+    "ALLOW TCP FROM ANY TO ANY PORT 443\nALLOW UDP FROM ANY TO ANY PORT 53\nALLOW TCP FROM 192.168.0.0/16 TO ANY PORT 80-100\nALLOW TCP FROM ANY TO 172.16.0.0/16 PORT 8000-8100\nDEFAULT DENY\n",
+    "```\nALLOW TCP FROM ANY TO ANY PORT 443\nALLOW UDP FROM ANY TO ANY PORT 53\nALLOW TCP FROM 192.168.0.0/16 TO ANY PORT 80-100\nALLOW TCP FROM ANY TO 172.16.0.0/24 PORT 8000-8100\nDEFAULT DENY\n```\n"
+  ]
+}

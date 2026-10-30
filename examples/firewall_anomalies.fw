@@ -1,0 +1,12 @@
+# firewall_anomalies.fw -- shadowed, union-shadowed and redundant rules
+DENY  TCP FROM ANY TO ANY PORT 22                           # R1
+ALLOW TCP FROM 10.0.0.0/8 TO ANY PORT 22                    # R2
+ALLOW TCP FROM ANY TO ANY PORT 443                          # R3
+ALLOW UDP FROM ANY TO ANY PORT 53                           # R4
+ALLOW TCP FROM 192.168.0.0/16 TO ANY PORT 80-89             # R5
+ALLOW TCP FROM 192.168.0.0/16 TO ANY PORT 90-100            # R6
+ALLOW TCP FROM 192.168.1.0/24 TO ANY PORT 85-95             # R7
+DENY  ICMP FROM ANY TO ANY                                  # R8
+ALLOW TCP FROM ANY TO 172.16.0.5 PORT 8080                  # R9
+ALLOW TCP FROM ANY TO 172.16.0.0/24 PORT 8000-8100          # R10
+DEFAULT DENY

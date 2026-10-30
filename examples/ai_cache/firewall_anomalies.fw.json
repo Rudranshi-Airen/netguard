@@ -1,0 +1,8 @@
+{
+  "example": "firewall_anomalies.fw",
+  "provenance": "REAL Gemini reply: model gemini-3.5-flash, recorded 2026-10-26 by tools/make_ai_cache.py",
+  "note": "attempt 1: equivalent",
+  "attempts": [
+    "ALLOW TCP FROM ANY TO ANY PORT 443\nALLOW UDP FROM ANY TO ANY PORT 53\nALLOW TCP FROM 192.168.0.0/16 TO ANY PORT 80-100\nALLOW TCP FROM ANY TO 172.16.0.0/24 PORT 8000-8100\nDEFAULT DENY\n"
+  ]
+}
